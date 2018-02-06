@@ -1,0 +1,52 @@
+from pprint import pprint
+
+# Get user input for movies
+
+try:
+    movie1 = str(raw_input('What is the name of movie 1: '))
+    movie2 = str(raw_input('What is the name of movie 2: '))
+
+    if not movie1.isalnum() or movie2.isalnum():
+        raise Exception()
+
+except Exception as e:
+    print 'The movies must be string'
+
+# Open the file
+file = open('movies.csv', 'r')
+
+# Create an empty dictionary to hold the actors names and movie titles
+filmography = []
+
+# Loop through each line and extract the actor and movies
+for line in file.readlines():
+
+    # Strip the line endings
+    clean_line = line.rstrip()
+
+    # Split the line in a list
+    words = clean_line.split(',')
+
+    # The first index is the actor's name
+    actor_name = words[0]
+
+    # Add the actor and their roles to a Tuple
+    actor_roles = (actor_name, words[1:])
+    filmography.append(actor_roles)
+
+first_movie = set()
+second_movie = set()
+
+for actor in filmography:
+    if movie1 in actor[1]:
+        first_movie.add(actor[0])
+    if movie2 in actor[1]:
+        second_movie.add(actor[0])
+
+both_movies = first_movie.intersection(second_movie)
+first_only = first_movie.difference(second_movie)
+second_only = second_movie.difference(first_movie)
+
+print 'Actors in {} and {}: {}'.format(movie1, movie2, ', '.join(both_movies))
+print 'Actors only in the {}: {}'.format(movie1, ', '.join(first_only))
+print 'Actors only in the {}: {}'.format(movie2, ', '.join(second_only))
