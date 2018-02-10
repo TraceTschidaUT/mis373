@@ -94,3 +94,5 @@ def PlayRPS():
     # Print the output
     print 'Number of games played: {}'.format(game_stats['games'])
     print 'Number of game won {}'.format(game_stats['wins'])
+
+PlayRPS()

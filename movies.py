@@ -1,5 +1,4 @@
 # Get user input for movies
-
 def GetMovieNames():
 
     valid_iput = False
@@ -63,3 +62,5 @@ def FindActors():
     print 'Actors in {} and {}: {}'.format(movie1, movie2, ', '.join(both_movies))
     print 'Actors only in the {}: {}'.format(movie1, ', '.join(first_only))
     print 'Actors only in the {}: {}'.format(movie2, ', '.join(second_only))
+
+FindActors()

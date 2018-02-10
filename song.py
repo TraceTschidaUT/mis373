@@ -79,3 +79,5 @@ def BuildSong():
 
         rap_verse.append(words)
         print words[0] + ' ' + words[2]
+
+BuildSong()
