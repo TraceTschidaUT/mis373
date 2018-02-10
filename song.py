@@ -1,4 +1,8 @@
 def BuildSong():
+    """Builds a rap song by matching work endings to create cohesive beat
+    Returns:
+    Arguements:
+    """
 
     s_file = open('skeleton_SamuraiShowdown.txt', 'r')
     e_file = open('endings.txt', 'r')
@@ -78,6 +82,10 @@ def BuildSong():
 
 
         rap_verse.append(words)
-        print words[0] + ' ' + words[2]
+
+        if words[0] == '':
+            print words[2]
+        else:
+            print words[0] + ' ' + words[2]
 
 BuildSong()
