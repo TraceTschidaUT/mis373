@@ -74,36 +74,72 @@ non_chains_boros = clean_restaurants_boros['BORO'][non_chain_boro_mask]
 
 # Plot the non chains by boro
 # non_chain_boros['BORO'].value_counts().plot(kind='bar')
-print non_chains_boros.value_counts()
+print non_chains_boros.value_counts().drop(labels='Missing')
 print '\n\n\nQ7'
 
 # Question 7
 
-# Get the number of chain restaurants by boro
-# Create a mask for chain restaurants
-chain_boro_mask = (restaurants_boros['DBA'].value_counts() > 1)
+# Get the number of total restaurants per boro
+total_restaurants_by_boro = df[['DBA', 'RESTAURANT', 'BORO']].drop_duplicates(subset='RESTAURANT')
 
-# Apply the mask to get the chains in each boro
-clean_restaurant_boros = restaurants_boros.set_index('DBA')
-chain_boros = clean_restaurant_boros['BORO'][chain_boro_mask]
+# Get a series with just the boro and the DBA as the index
+total_names_by_boro = total_restaurants_by_boro.set_index('DBA')['BORO']
+
 
 # Divide the number of non chains by boro by the number of chains
 # Create two series and divide them to create a new series
-percent_independents = non_chains_boros.value_counts() / chain_boros.value_counts()
-print percent_independents[:5]
+percent_independents = non_chains_boros.value_counts().drop(labels='Missing') / \
+                        total_names_by_boro.value_counts().drop(labels='Missing')
+print percent_independents
 print '\n\n\nQ8'
 
 # Question 8
 # Create a DF with Cusines and Uniques IDS
 # Drop all duplicate restaurants based on repeating ids
-ids_cuisines = df[["RESTAURANT", 'CUISINE']].drop_duplicates('RESTAURANT')
+ids_cuisines = df[["RESTAURANT", 'CUISINE DESCRIPTION']].drop_duplicates('RESTAURANT')
 
 # Plot the values of each cuisine 
 # Grap a series (column) and plot the value counts
+cuisine_value_counts = ids_cuisines['CUISINE DESCRIPTION'].value_counts()
 # ids_cusines['CUISINE'].value_counts().plot(kind='bar')
-print ids_cuisines['CUISINE'].value_counts()
+print cuisine_value_counts[:20]
+print '\n\n\nQ9'
 
 # Question 9
+
+# Get a df of restaurants cuisine and violation code
+df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE']] \
+                                .drop_duplicates('RESTAURANT')
+
+df_cuisines_violations = df[['CUISINE DESCRIPTION', 'VIOLATION CODE']]
+
+# Create a mask of the null Violation codees in a series
+mask_violation = (df['VIOLATION CODE'].isnull())
+
+# Apply the mask
+df_notnull_cuisines_violation = df_cuisines_violations[mask_violation]
+
+# Get the popularity of the cuisines
+print df_notnull_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[:20]
+print '\n\n\nQ10'
+
+
 # Question 10
+
+# Get a df of restaurants cuisine and violation code
+df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE']].drop_duplicates(subset='RESTAURANT')
+
+# Create a mask for cuisines that have atleast 20 inspecitions
+mask_cuisines_20_inspections = (df_ids_cuisines_violations['CUISINE DESCRIPTION'].value_counts() >= 20)
+
+# Apply the mask to filter out the cuisines w/o 20+ inspections
+df_cuisines_violations = df_ids_cuisines_violations.set_index('CUISINE DESCRIPTION')
+df_cuisines_20_violations = df_cuisines_violations[mask_cuisines_20_inspections]
+
+# Reset the index and grab only the cuisines
+df_cuisines_20_violations.reset_index(inplace=True)
+s_at_least_20_inspections = df_cuisines_20_violations['CUISINE DESCRIPTION']
+print s_at_least_20_inspections.value_counts()[:10]
+
 # Question 11
 # Question 12
