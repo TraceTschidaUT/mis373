@@ -133,13 +133,11 @@ df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION
 mask_cuisines_20_inspections = (df_ids_cuisines_violations['CUISINE DESCRIPTION'].value_counts() >= 20)
 
 # Apply the mask to filter out the cuisines w/o 20+ inspections
-df_cuisines_violations = df_ids_cuisines_violations.set_index('CUISINE DESCRIPTION')
-df_cuisines_20_violations = df_cuisines_violations[mask_cuisines_20_inspections]
+s_cuisines_violations = df_notnull_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[mask_cuisines_20_inspections]
+s_cuisines_total = cuisine_value_counts[mask_cuisines_20_inspections]
 
-# Reset the index and grab only the cuisines
-df_cuisines_20_violations.reset_index(inplace=True)
-s_at_least_20_inspections = df_cuisines_20_violations['CUISINE DESCRIPTION']
-print s_at_least_20_inspections.value_counts()[:10]
+s_cleanest_cuisines = s_cuisines_violations / s_cuisines_total
+print s_cleanest_cuisines.sort_values(ascending=False)[:10]
 
 # Question 11
 # Question 12
