@@ -46,11 +46,12 @@ print num_chains
 
 # Reset the index
 chains.reset_index()['DBA'].value_counts()[:20].plot(kind='bar')
-plt.show()
+# plt.show()
 
 # Question 5
 
 print num_chains / num_unique_restaurants
+print '\n\n\n'
 
 # Question 6
 
@@ -71,6 +72,7 @@ non_chains_boros = clean_restaurant_boros[non_chain_boro_mask]
 
 # Plot the non chains by boro
 non_chain_boros['BOROUGH'].value_counts().plot(kind='bar')
+print non_chain_boros.value_counts()
 
 # Question 7
 
@@ -83,8 +85,19 @@ clean_restaurant_boros = restaurant_boros.set_index('DBA')
 chain_boros = clean_restaurant_boros[chain_boro_mask]
 
 # Divide the number of non chains by boro by the number of chains
+# Create two series and divide them to create a new series
+percent_independents = non_chain_boros['BOROUGH'].value_counts() / chain_boros['BOROUGHS'].value_counts()
 
 # Question 8
+
+# Create a DF with Cusines and Uniques IDS
+# Drop all duplicate restaurants based on repeating ids
+ids_cuisines = df[["RESTAURANT", 'CUISINE']].drop_duplicates(subet='RESTAURANT')
+
+# Plot the values of each cuisine 
+# Grap a series (column) and plot the value counts
+ids_cusines['CUISINE'].value_counts().plot(kind='bar')
+
 # Question 9
 # Question 10
 # Question 11
