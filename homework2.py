@@ -55,10 +55,35 @@ print num_chains / num_unique_restaurants
 # Question 6
 
 # Get all non chain Resturants
-non_chain_mask = (df[['DBA', 'RESTAURANT']].drop_duplicates(subset='RESTAURANT')['DBA'].value_counts() < 2)
-print non_chain_mask
+
+# Create a new DF with just the necessary columns and index as the DBA
+restaurants_boros = df[['DBA', 'RESTAURANT', 'BOROUGH']].drop_duplicates(subset='RESTAURANT')
+
+# Set the index to be DBA so the mask works
+clean_restaurant_boros = restaurant_boros.set_index('DBA')
+
+# Create a mask for the non chain restaurants
+# Non chain restaurants will only appear once
+non_chain_boro_mask = (clean_restaurants_boros['DBA'].value_counts() < 2)
+
+# Apply the mask
+non_chains_boros = clean_restaurant_boros[non_chain_boro_mask]
+
+# Plot the non chains by boro
+non_chain_boros['BOROUGH'].value_counts().plot(kind='bar')
 
 # Question 7
+
+# Get the number of chain restaurants by boro
+# Create a mask for chain restaurants
+chain_boro_mask = (restaurants_boros['DBA'].value_counts() > 1)
+
+# Apply the mask to get the chains in each boro
+clean_restaurant_boros = restaurant_boros.set_index('DBA')
+chain_boros = clean_restaurant_boros[chain_boro_mask]
+
+# Divide the number of non chains by boro by the number of chains
+
 # Question 8
 # Question 9
 # Question 10
