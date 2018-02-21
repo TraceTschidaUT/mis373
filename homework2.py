@@ -12,21 +12,21 @@ df['RESTAURANT'] = df['DBA'] + ' ' + df['BUILDING'] + ' ' + df['STREET'] + ' ' +
 # Print the first 10
 print df['RESTAURANT'][:10]
 
-print '\n\n\n'
+print '\n\n\nQ2'
 
 # Question 2
 
 # Get the Value Counts for Unique Restaurant Name
 # Create a Series with just the unique RESTAURANTS
-unique_resturants = df['RESTAURANT'].unique()
-num_unique_restaurants = len(unique_resturants)
-print num_unique_restaurants
-print '\n\n\n'
+total_resturants = df['RESTAURANT'].unique()
+num_total_restaurants = len(total_resturants)
+print num_total_restaurants
+print '\n\n\nQ3'
 
 # Question 3
 
 # Get the unique Resturant Names and full Name
-ids_restaurants = df[['DBA', 'RESTAURANT']].drop_duplicates(subset='RESTAURANT')
+ids_restaurants = df[['DBA', 'RESTAURANT']].drop_duplicates('RESTAURANT')
 
 # Create  a mask to repersent only the Names that appear more than once
 chain_mask = (ids_restaurants['DBA'].value_counts() > 1)
@@ -37,42 +37,45 @@ chain_mask = (ids_restaurants['DBA'].value_counts() > 1)
 chains = ids_restaurants.set_index('DBA')['RESTAURANT'][chain_mask]
 
 
-# Print the number of unique indexes
-num_chains = len(chains)
+# Print the number of unique chains
+num_chains = len(chains.reset_index()['DBA'].value_counts())
 print num_chains
-
+print '\n\n\nQ4'
 
 # Question 4
 
 # Reset the index
-chains.reset_index()['DBA'].value_counts()[:20].plot(kind='bar')
+# chains.reset_index()['DBA'].value_counts()[:20].plot(kind='bar')
 # plt.show()
+
+print '\n\n\nQ5'
 
 # Question 5
 
-print num_chains / num_unique_restaurants
-print '\n\n\n'
+print float(num_chains) / float(num_total_restaurants)
+print '\n\n\nQ6'
 
 # Question 6
 
 # Get all non chain Resturants
 
 # Create a new DF with just the necessary columns and index as the DBA
-restaurants_boros = df[['DBA', 'RESTAURANT', 'BOROUGH']].drop_duplicates(subset='RESTAURANT')
-
-# Set the index to be DBA so the mask works
-clean_restaurant_boros = restaurant_boros.set_index('DBA')
+restaurants_boros = df[['DBA', 'RESTAURANT', 'BORO']].drop_duplicates('RESTAURANT')
 
 # Create a mask for the non chain restaurants
 # Non chain restaurants will only appear once
-non_chain_boro_mask = (clean_restaurants_boros['DBA'].value_counts() < 2)
+non_chain_boro_mask = (restaurants_boros['DBA'].value_counts() < 2)
+
+# Set the index to be DBA so the mask works
+clean_restaurants_boros = restaurants_boros.set_index('DBA')
 
 # Apply the mask
-non_chains_boros = clean_restaurant_boros[non_chain_boro_mask]
+non_chains_boros = clean_restaurants_boros['BORO'][non_chain_boro_mask]
 
 # Plot the non chains by boro
-non_chain_boros['BOROUGH'].value_counts().plot(kind='bar')
-print non_chain_boros.value_counts()
+# non_chain_boros['BORO'].value_counts().plot(kind='bar')
+print non_chains_boros.value_counts()
+print '\n\n\nQ7'
 
 # Question 7
 
@@ -81,22 +84,24 @@ print non_chain_boros.value_counts()
 chain_boro_mask = (restaurants_boros['DBA'].value_counts() > 1)
 
 # Apply the mask to get the chains in each boro
-clean_restaurant_boros = restaurant_boros.set_index('DBA')
-chain_boros = clean_restaurant_boros[chain_boro_mask]
+clean_restaurant_boros = restaurants_boros.set_index('DBA')
+chain_boros = clean_restaurant_boros['BORO'][chain_boro_mask]
 
 # Divide the number of non chains by boro by the number of chains
 # Create two series and divide them to create a new series
-percent_independents = non_chain_boros['BOROUGH'].value_counts() / chain_boros['BOROUGHS'].value_counts()
+percent_independents = non_chains_boros.value_counts() / chain_boros.value_counts()
+print percent_independents[:5]
+print '\n\n\nQ8'
 
 # Question 8
-
 # Create a DF with Cusines and Uniques IDS
 # Drop all duplicate restaurants based on repeating ids
-ids_cuisines = df[["RESTAURANT", 'CUISINE']].drop_duplicates(subet='RESTAURANT')
+ids_cuisines = df[["RESTAURANT", 'CUISINE']].drop_duplicates('RESTAURANT')
 
 # Plot the values of each cuisine 
 # Grap a series (column) and plot the value counts
-ids_cusines['CUISINE'].value_counts().plot(kind='bar')
+# ids_cusines['CUISINE'].value_counts().plot(kind='bar')
+print ids_cuisines['CUISINE'].value_counts()
 
 # Question 9
 # Question 10
