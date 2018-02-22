@@ -117,10 +117,11 @@ df_cuisines_violations = df[['CUISINE DESCRIPTION', 'VIOLATION CODE']]
 mask_violation = (df['VIOLATION CODE'].isnull())
 
 # Apply the mask
-df_notnull_cuisines_violation = df_cuisines_violations[mask_violation]
+df_null_cuisines_violation = df_cuisines_violations[mask_violation]
 
 # Get the popularity of the cuisines
-print df_notnull_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[:20]
+s_null_violation_value_count = df_null_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[:20]
+print s_null_violation_value_count
 print '\n\n\nQ10'
 
 
@@ -133,9 +134,11 @@ df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION
 mask_cuisines_20_inspections = (df_ids_cuisines_violations['CUISINE DESCRIPTION'].value_counts() >= 20)
 
 # Apply the mask to filter out the cuisines w/o 20+ inspections
-s_cuisines_violations = df_notnull_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[mask_cuisines_20_inspections]
+# Filter out total count of cuisiens without violations and total count of cuisines
+s_cuisines_violations = s_null_violation_value_count[mask_cuisines_20_inspections]
 s_cuisines_total = cuisine_value_counts[mask_cuisines_20_inspections]
 
+# Find the ratio of total count of cuisines without violations to total count of cuisines
 s_cleanest_cuisines = s_cuisines_violations / s_cuisines_total
 print s_cleanest_cuisines.sort_values(ascending=False)[:10]
 
