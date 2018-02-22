@@ -141,6 +141,55 @@ s_cuisines_total = cuisine_value_counts[mask_cuisines_20_inspections]
 # Find the ratio of total count of cuisines without violations to total count of cuisines
 s_cleanest_cuisines = s_cuisines_violations / s_cuisines_total
 print s_cleanest_cuisines.sort_values(ascending=False)[:10]
+print('\n\n\nQ11')
 
 # Question 11
+
+# Get a table of the violations, and boros
+df_violations_per_boro = df[['VIOLATION CODE', 'BORO']]
+
+# Add a dummy count to the df
+list_dummy = [1 for x in range(len(df_violations_per_boro))]
+df_violations_per_boro = df_violations_per_boro.assign(DUMMY=list_dummy)
+
+# Create a pivot table for the violatoions and boros
+pivot_violations_per_boro = pd.pivot_table(df_violations_per_boro,
+    index='VIOLATION CODE', columns='BORO', values='DUMMY', aggfunc=sum)
+
+# Get the max value's index (violation code) for each column (boro)
+series_max_violations_per_boro = pivot_violations_per_boro.idxmax().drop(labels='Missing')
+print series_max_violations_per_boro
+print '\n\n\nQ12'
+
 # Question 12
+
+# Get overall frequencies: 
+# Figure out how common each violation is, over the entire dataset
+s_violationFrequency = df['VIOLATION CODE'].value_counts()
+
+# Normalize: Consider the table of number of violations by boro that
+# you created for the previous question. For each borough, divide the
+# number of violations of each type by the total number of violations for
+# that type; i.e., divide the series of violations by violationFrequency.
+# We want to do this for each borough.
+
+# Divide each cell by its corresponding total of violations
+def normalize(s):
+    ''' s: Series \n
+        normalize -> Series
+    '''
+    # Pandas matches up the indexes of each series 
+    # the Series have the same index
+    # The index is the violation code
+    return s / s_violationFrequency
+
+# Normalize every series 
+df_normalized_violations_per_boro = pivot_violations_per_boro.apply(normalize)
+
+# Get the most violational per boro normalized by total number of violations
+series_max_violations_per_boro_normalized = df_normalized_violations_per_boro.idxmax() \
+                                                .drop('Missing')
+                                                
+print series_max_violations_per_boro_normalized
+
+
