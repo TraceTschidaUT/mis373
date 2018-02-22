@@ -1,7 +1,7 @@
 {
     "git.ignoreLimitWarning": true,
     "python.linting.enabled": false,
-    "python.pythonPath": "C:\\Users\\tracetschida\\Anaconda2\\python.exe",
+    "python.pythonPath": "/anaconda2/bin/python",
     "python.autoComplete.preloadModules": [
         "pandas",
         "numpy"

@@ -19,13 +19,19 @@ print '\n\n\nQ2'
 # Get the Value Counts for Unique Restaurant Name
 # Create a Series with just the unique RESTAURANTS
 total_resturants = df['RESTAURANT'].unique()
+
+# Find how many rows are in the Series
 num_total_restaurants = len(total_resturants)
+
+# Print the number of Restaurants
 print num_total_restaurants
+
 print '\n\n\nQ3'
 
 # Question 3
 
 # Get the unique Resturant Names and full Name
+# Get only the unique restaurants
 ids_restaurants = df[['DBA', 'RESTAURANT']].drop_duplicates('RESTAURANT')
 
 # Create  a mask to repersent only the Names that appear more than once
@@ -36,23 +42,28 @@ chain_mask = (ids_restaurants['DBA'].value_counts() > 1)
 # Create a series with just the RESTAURANT and the index will be DBA
 chains = ids_restaurants.set_index('DBA')['RESTAURANT'][chain_mask]
 
+# Get the number of chains by counting the total occurance of each chain name
+num_chain_restaurants = chains.reset_index()['DBA'].value_counts().sum()
+num_chains = len(chains.reset_index()['DBA'].value_counts())
 
 # Print the number of unique chains
-num_chains = len(chains.reset_index()['DBA'].value_counts())
 print num_chains
+
 print '\n\n\nQ4'
 
 # Question 4
 
-# Reset the index
-# chains.reset_index()['DBA'].value_counts()[:20].plot(kind='bar')
-# plt.show()
+# Reset the index to a count
+# Get the number of occurances for each chain name
+# Plot the top 20
+chains.reset_index()['DBA'].value_counts()[:20].plot(kind='bar')
+plt.show()
 
 print '\n\n\nQ5'
 
 # Question 5
 
-print float(num_chains) / float(num_total_restaurants)
+print float(num_chain_restaurants) / float(num_total_restaurants)
 print '\n\n\nQ6'
 
 # Question 6
@@ -69,12 +80,13 @@ non_chain_boro_mask = (restaurants_boros['DBA'].value_counts() < 2)
 # Set the index to be DBA so the mask works
 clean_restaurants_boros = restaurants_boros.set_index('DBA')
 
-# Apply the mask
+# Apply the mask to the chain name as index and values as boros
+# Select out only the non chains
 non_chains_boros = clean_restaurants_boros['BORO'][non_chain_boro_mask]
 
 # Plot the non chains by boro
-# non_chain_boros['BORO'].value_counts().plot(kind='bar')
-print non_chains_boros.value_counts().drop(labels='Missing')
+non_chains_boros.value_counts().drop(labels='Missing').plot(kind='bar')
+plt.show()
 print '\n\n\nQ7'
 
 # Question 7
@@ -85,12 +97,12 @@ total_restaurants_by_boro = df[['DBA', 'RESTAURANT', 'BORO']].drop_duplicates(su
 # Get a series with just the boro and the DBA as the index
 total_names_by_boro = total_restaurants_by_boro.set_index('DBA')['BORO']
 
-
-# Divide the number of non chains by boro by the number of chains
+# Divide the number of non chains by boro series by the number of total restaurants in each boro series
 # Create two series and divide them to create a new series
 percent_independents = non_chains_boros.value_counts().drop(labels='Missing') / \
                         total_names_by_boro.value_counts().drop(labels='Missing')
-print percent_independents
+percent_independents.plot(kind='bar')
+plt.show()
 print '\n\n\nQ8'
 
 # Question 8
@@ -101,34 +113,41 @@ ids_cuisines = df[["RESTAURANT", 'CUISINE DESCRIPTION']].drop_duplicates('RESTAU
 # Plot the values of each cuisine 
 # Grap a series (column) and plot the value counts
 cuisine_value_counts = ids_cuisines['CUISINE DESCRIPTION'].value_counts()
-# ids_cusines['CUISINE'].value_counts().plot(kind='bar')
-print cuisine_value_counts[:20]
+cuisine_value_counts[:20].plot(kind='bar')
+plt.show()
 print '\n\n\nQ9'
 
 # Question 9
 
 # Get a df of restaurants cuisine and violation code
-df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE']] \
-                                .drop_duplicates('RESTAURANT')
+# Drops restaurants that appear more than once either for multiple violations or multiple inspections
+df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE', 'INSPECTION DATE']] \
+                                .drop_duplicates(subset=['RESTAURANT', 'INSPECTION DATE'])
 
 df_cuisines_violations = df[['CUISINE DESCRIPTION', 'VIOLATION CODE']]
 
 # Create a mask of the null Violation codees in a series
+# True and false values are based on index
+# Index is numerical not strings
 mask_violation = (df['VIOLATION CODE'].isnull())
+print mask_violation[:10]
 
 # Apply the mask
 df_null_cuisines_violation = df_cuisines_violations[mask_violation]
 
 # Get the popularity of the cuisines
-s_null_violation_value_count = df_null_cuisines_violation['CUISINE DESCRIPTION'].value_counts()[:20]
-print s_null_violation_value_count
+s_null_violation_value_count = df_null_cuisines_violation['CUISINE DESCRIPTION'].value_counts()
+s_null_violation_value_count[:20].plot(kind='bar')
+plt.show()
 print '\n\n\nQ10'
 
 
 # Question 10
 
 # Get a df of restaurants cuisine and violation code
-df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE']].drop_duplicates(subset='RESTAURANT')
+df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE','INSPECTION DATE']] \
+                                .drop_duplicates(subset=['RESTAURANT', 'INSPECTION DATE'])
+
 
 # Create a mask for cuisines that have atleast 20 inspecitions
 mask_cuisines_20_inspections = (df_ids_cuisines_violations['CUISINE DESCRIPTION'].value_counts() >= 20)
@@ -176,14 +195,15 @@ s_violationFrequency = df['VIOLATION CODE'].value_counts()
 # Divide each cell by its corresponding total of violations
 def normalize(s):
     ''' s: Series \n
-        normalize -> Series
+        normalize(s) -> Series
     '''
     # Pandas matches up the indexes of each series 
     # the Series have the same index
     # The index is the violation code
     return s / s_violationFrequency
 
-# Normalize every series 
+# Normalize every series (column) 
+# Divide the violation count in the boro by the total number of that violation in the dataset
 df_normalized_violations_per_boro = pivot_violations_per_boro.apply(normalize)
 
 # Get the most violational per boro normalized by total number of violations
