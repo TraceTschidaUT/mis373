@@ -121,22 +121,23 @@ print '\n\n\nQ9'
 
 # Get a df of restaurants cuisine and violation code
 # Drops restaurants that appear more than once either for multiple violations or multiple inspections
-df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION', 'VIOLATION CODE', 'INSPECTION DATE']] \
-                                .drop_duplicates(subset=['RESTAURANT', 'INSPECTION DATE'])
-
-df_cuisines_violations = df[['CUISINE DESCRIPTION', 'VIOLATION CODE']]
+df_ids_cuisines_violations = df[["RESTAURANT", 'CUISINE DESCRIPTION']]
 
 # Create a mask of the null Violation codees in a series
 # True and false values are based on index
 # Index is numerical not strings
 mask_violation = (df['VIOLATION CODE'].isnull())
-print mask_violation[:10]
 
 # Apply the mask
-df_null_cuisines_violation = df_cuisines_violations[mask_violation]
+df_null_cuisines_violation = df_ids_cuisines_violations[mask_violation]
+
+# Drop the duplicates for only clean restaurants
+# Even if the restaurants were inspected multiple time
+df_null_cuisines_violation = df_null_cuisines_violation.drop_duplicates()
 
 # Get the popularity of the cuisines
 s_null_violation_value_count = df_null_cuisines_violation['CUISINE DESCRIPTION'].value_counts()
+print s_null_violation_value_count[:20]
 s_null_violation_value_count[:20].plot(kind='bar')
 plt.show()
 print '\n\n\nQ10'
@@ -165,7 +166,7 @@ print('\n\n\nQ11')
 # Question 11
 
 # Get a table of the violations, and boros
-df_violations_per_boro = df[['VIOLATION CODE', 'BORO']]
+df_violations_per_boro = df[['VIOLATION DESCRIPTION', 'BORO']]
 
 # Add a dummy count to the df
 list_dummy = [1 for x in range(len(df_violations_per_boro))]
@@ -173,7 +174,7 @@ df_violations_per_boro = df_violations_per_boro.assign(DUMMY=list_dummy)
 
 # Create a pivot table for the violatoions and boros
 pivot_violations_per_boro = pd.pivot_table(df_violations_per_boro,
-    index='VIOLATION CODE', columns='BORO', values='DUMMY', aggfunc=sum)
+    index='VIOLATION DESCRIPTION', columns='BORO', values='DUMMY', aggfunc=sum)
 
 # Get the max value's index (violation code) for each column (boro)
 series_max_violations_per_boro = pivot_violations_per_boro.idxmax().drop(labels='Missing')
@@ -184,7 +185,7 @@ print '\n\n\nQ12'
 
 # Get overall frequencies: 
 # Figure out how common each violation is, over the entire dataset
-s_violationFrequency = df['VIOLATION CODE'].value_counts()
+s_violationFrequency = df['VIOLATION DESCRIPTION'].value_counts()
 
 # Normalize: Consider the table of number of violations by boro that
 # you created for the previous question. For each borough, divide the
