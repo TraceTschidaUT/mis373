@@ -51,6 +51,33 @@ def get_month(e):
     '''Takes in a datetime element and returns the month'''
     return e.month
 
+def name_month(e):
+    '''Takes in an element from a series, and outputs the 
+    string representation of the month'''
+
+    month = int(e)
+    return months[month]
+
+months = {
+    1: 'January',
+    2: 'February',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December'
+}
+
+def get_days(e):
+    '''Takes in a DateTime element from a series and 
+    returns the number of days'''
+    return e.days
+
 # Load the csv
 df = pd.read_csv('ks-projects-201801.csv')
 
@@ -67,6 +94,30 @@ df['month_launched'] = df['launched'].map(get_month)
 
 # Add an average pledge per backer
 df['average_pledged'] = df['pledged'] / df['backers']
+
+# Create a cateogy for the month launched, goals, and quarter launched
+df['month_named'] = df['month_launched'].map(name_month).astype('category')
+
+# Bin goal amount
+df['goal_binned'] = pd.qcut(df['usd_goal_real'], 10)
+
+# Bin the months into quarters
+df['quarter_binned'] = "Q1"
+mask_q1 = (df['month_launched'] <= 3)
+mask_q2 = ((df['month_launched'] > 3) & (df['month_launched'] <= 6))
+mask_q3 = ((df['month_launched'] > 6) & (df['month_launched'] <= 9))
+mask_q4 = (df['month_launched'] > 9)
+
+df.loc[mask_q1, 'quarter_binned'] = "Q1"
+df.loc[mask_q2, 'quarter_binned'] = "Q2"
+df.loc[mask_q3, 'quarter_binned'] = "Q3"
+df.loc[mask_q4, 'quarter_binned'] = "Q4"
+df['quarter_binned'] = df['quarter_binned'].astype('category')
+
+# Get the length of the project
+df['project_length'] = df['deadline'] - df['launched']
+df['project_length_days'] = df['project_length'].map(get_days)
+print df['project_length_days'].value_counts()
 
 # Get a baseline for the ML
 # The first part is going to predict based off of cateogrical variables: 
@@ -135,18 +186,21 @@ print scores
 # But that makes sense, and is only after the fact
 # Backers is continuous not categorical
 
-# What about the category, main category, and goal amount
+# What about the category, main category, country, month launched, and goal amount
 # Can we predict if the project will be successfully funded
 # We first need to discretize the goal amount
 # Create 20 bins of the goal amount
 # usd_goal_real is discrete not catoegorical
-df['goal_binned'] = pd.qcut(df['usd_goal_real'], 10)
 
 # Create a list of categorical columns that will be used
-categorical_columns = ['goal_binned', 'category', 'main_category']
+categorical_columns = ['goal_binned', 'category', 'main_category',
+'country', 'quarter_binned', 'month_named']
 
-# Create a df that includes the dummy variables
-df_dummies = pd.get_dummies(df[categorical_columns], prefix=categorical_columns, columns=categorical_columns)
+# Create a df that includes the dummy variables (0/1) for all categorical data
+df_dummies = pd.get_dummies(df_clean_states[categorical_columns],
+prefix=categorical_columns,columns=categorical_columns)
+
+print df_dummies[:1]
 
 # Get the categories with the most funding
 temp = df.groupby('main_category')['usd_goal_real'].mean().sort_values(ascending=False)
