@@ -5,6 +5,7 @@ import statsmodels.api as sm
 from sklearn.model_selection import train_test_split
 from sklearn import neighbors, metrics, model_selection, naive_bayes
 from datetime import datetime
+from numpy import exp
 import warnings
 warnings.filterwarnings('ignore')
 # %pylab inline
@@ -81,6 +82,10 @@ def get_days(e):
 # Load the csv
 df = pd.read_csv('ks-projects-201801.csv')
 
+# Drop countries with name N,0"
+mask_country_drop = (df['country'] != 'N,0"')
+df = df[mask_country_drop]
+
 # Convert the currency into today's price
 df = currency_conversion(df)
 
@@ -117,7 +122,7 @@ df['quarter_binned'] = df['quarter_binned'].astype('category')
 # Get the length of the project
 df['project_length'] = df['deadline'] - df['launched']
 df['project_length_days'] = df['project_length'].map(get_days)
-print df['project_length_days'].value_counts()
+# print df['project_length_days'].value_counts()
 
 # Get a baseline for the ML
 # The first part is going to predict based off of cateogrical variables: 
@@ -193,14 +198,49 @@ print scores
 # usd_goal_real is discrete not catoegorical
 
 # Create a list of categorical columns that will be used
-categorical_columns = ['goal_binned', 'category', 'main_category',
-'country', 'quarter_binned', 'month_named']
+categorical_columns = ['goal_binned', 'category',
+'country', 'quarter_binned']
 
 # Create a df that includes the dummy variables (0/1) for all categorical data
 df_dummies = pd.get_dummies(df_clean_states[categorical_columns],
 prefix=categorical_columns,columns=categorical_columns)
 
-print df_dummies[:1]
+# Concatenate all dummy columns into the dataframe
+df_clean_dummies = pd.concat([df_clean_states, df_dummies], axis=1)
+
+# Create the formula
+formula = 'target ~ 0 + {}'.format(' + '.join(['Q("{}")'.format(x) for x in df_dummies.columns.values[:205]]))
+
+# Create the testings and training matrices
+Y,X = dmatrices(formula, df_clean_dummies, return_type='dataframe')
+y = Y['target'].values
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+
+# Build and run the model
+model = naive_bayes.MultinomialNB()
+model.fit(X_train, y_train)
+print categorical_columns
+print metrics.accuracy_score(y_test, model.predict(X_test))
+
+# Get the class priors
+print 'Negative Class Prior'
+print exp(model.class_log_prior_[0])
+print 'Positive Class Prior'
+print exp(model.class_log_prior_[1])
+
+# Check class priors
+print
+print 'Check class priors'
+print df_clean_dummies['target'].value_counts() / len(df)
+
+# Check the likelihood and feature importance
+# Seems like technology categories are the most important...
+feature_importance = abs(model.feature_log_prob_[1] - model.feature_log_prob_[0])
+series_feature_importance = Series(feature_importance, index=X.columns.values)
+print series_feature_importance.sort_values(ascending=False)[:10]
+
+# Need to build up cross validation
 
 # Get the categories with the most funding
 temp = df.groupby('main_category')['usd_goal_real'].mean().sort_values(ascending=False)
